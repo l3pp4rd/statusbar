@@ -3,6 +3,10 @@
 This is a statusbar for a **linux** window managers written in **golang**.
 Currently it provides these details:
 
+## Screenshot
+
+![Screenshot](https://cloud.githubusercontent.com/assets/132389/11459250/ff0406d4-96da-11e5-8afa-73721233b6f6.png)
+
 - shows active keyboard layout.
 - **network** connection details, wifi or ethernet, upload and download speeds. (**nmcli** is required)
 - unread gmail email counts for multiple accounts in given order.
@@ -40,4 +44,5 @@ Now you can run:
 
 **NOTE:** you may change these properties based on your screen layout and fonts.
 
+![Screenshot](https://cloud.githubusercontent.com/assets/132389/11459253/0ffa8616-96db-11e5-952b-de3d27c5f792.png)
 
