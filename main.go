@@ -59,9 +59,8 @@ func main() {
 	bar.reg("date", date)
 
 	for {
-		time.Sleep(time.Second * INTERVAL_SECS)
-
 		fmt.Println(strings.Join(bar.run(), " "))
+		time.Sleep(time.Second * INTERVAL_SECS)
 	}
 }
 

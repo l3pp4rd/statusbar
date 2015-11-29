@@ -90,7 +90,7 @@ func network_device_bytes(dev, typ string) (int64, error) {
 }
 
 func network_traffic(prev, next int64, typ string) string {
-	nb := (next - prev) / INTERVAL_SECS
+	nb := (next - prev) / KB / INTERVAL_SECS
 	format := "%s ^i(" + xbm("arr_down") + ")^fg()"
 	if typ == UPLOAD {
 		format = "%s ^i(" + xbm("arr_up") + ")^fg()"
@@ -103,10 +103,8 @@ func network_traffic(prev, next int64, typ string) string {
 	switch {
 	case nb >= MB:
 		traffic = fmt.Sprintf("%d MB", nb/MB)
-	case nb >= KB:
-		traffic = fmt.Sprintf("%d KB", nb/KB)
 	default:
-		traffic = fmt.Sprintf("%d B", nb)
+		traffic = fmt.Sprintf("%d KB", nb)
 	}
 
 	return fmt.Sprintf(format, traffic)

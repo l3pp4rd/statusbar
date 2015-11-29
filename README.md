@@ -36,7 +36,7 @@ If you run `make` it will build and move binary to **/usr/local/bin/statusbar**.
 
 Now you can run:
 
-    statusbar emails.json | dzen2 -x 50 -y 500 -bg '#073642' -fg '#839496' -ta r -p -fn 'InconsolataSansMono:size=11' -h 20 -w 700
+    statusbar emails.json | dzen2 -x -820 -y 0 -bg '#073642' -fg '#839496' -ta r -p -fn 'InconsolataSansMono:size=11' -h 19 -w 710
 
 **NOTE:** you may change these properties based on your screen layout and fonts.
 
