@@ -66,17 +66,21 @@ func main() {
 func init_assets() error {
 	_, err := exec.Command("mkdir", "-p", XBM_DIR).Output()
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create dir: %s - %s", XBM_DIR, err)
 	}
 	for p, f := range _bindata {
 		loc := XBM_DIR + strings.Replace(p, "xbm/", "/", 1)
-		if _, err := os.Stat(loc); err == nil {
+		_, err := os.Stat(loc)
+		switch {
+		case err == nil:
 			continue
+		case !os.IsNotExist(err):
+			return fmt.Errorf("stat asset %s - %s", loc, err)
 		}
 
 		asset, err := f()
 		if err != nil {
-			return fmt.Errorf("asset %s can't read by error: %v", p, err)
+			return fmt.Errorf("asset %s can't read: %s", p, err)
 		}
 
 		file, err := os.Create(loc)

@@ -10,13 +10,13 @@ import (
 func cpu_load() (string, error) {
 	data, err := ioutil.ReadFile(CPU_LOAD_FILE)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("read cpu load from %s - %s", CPU_LOAD_FILE, err)
 	}
 
 	parts := strings.Split(strings.TrimSpace(string(data)), " ")
 	load, err := strconv.ParseFloat(parts[0], 64)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("parse cpu average load: %s", err)
 	}
 	var color string
 	switch {

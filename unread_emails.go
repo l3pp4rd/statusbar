@@ -93,7 +93,7 @@ func unread_emails(confPath string) element {
 			go func(u, p string) {
 				c, err := gm.fetch(u, p)
 				if err != nil {
-					log.Println("failed to fetch email count from: %s - %s", u, err)
+					log.Printf("failed to fetch email count from: %s - %s\n", u, err)
 					c = 0
 				}
 				gm.Lock()

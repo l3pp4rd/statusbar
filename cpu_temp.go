@@ -12,7 +12,7 @@ var match_temp = regexp.MustCompile(`Core\s+\d+:\s+\+([\d]+)`)
 func cpu_temp() (string, error) {
 	data, err := exec.Command("sensors").Output()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("'sensors' command: %s", err)
 	}
 
 	var cores []int

@@ -30,7 +30,7 @@ type nw_stats struct {
 func (s *nw_stats) signal_strength() (int, error) {
 	lines, err := exec.Command("nmcli", "-t", "-f", "SSID,SIGNAL", "device", "wifi", "list").Output()
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("wifi signal strength nmcli: %s", err)
 	}
 	for _, ln := range strings.Split(string(lines), "\n") {
 		parts := strings.Split(strings.TrimSpace(ln), ":")
@@ -38,7 +38,12 @@ func (s *nw_stats) signal_strength() (int, error) {
 			continue
 		}
 
-		return strconv.Atoi(parts[1])
+		sig, err := strconv.Atoi(parts[1])
+		if err != nil {
+			return 0, fmt.Errorf("wifi signal strength to int: %s", err)
+		}
+
+		return sig, nil
 	}
 	return 0, nil
 }
@@ -77,11 +82,11 @@ func network_stats() (string, error) {
 
 	stats.rx, err = network_device_bytes(stats.device, DOWNLOAD)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("stat downloaded bytes: %s", err)
 	}
 	stats.tx, err = network_device_bytes(stats.device, UPLOAD)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("stat uploaded bytes: %s", err)
 	}
 
 	if nw_current == nil {
@@ -91,10 +96,22 @@ func network_stats() (string, error) {
 	var out string
 	switch stats.typ {
 	case "wifi":
-		out = fmt.Sprintf("^i(%s)", xbm("net-wifi5"))
+		sig, err := stats.signal_strength()
+		if err != nil {
+			return out, err
+		}
+
+		switch {
+		case sig >= 70:
+			out = fmt.Sprintf("^i(%s)", xbm("wifi-full"))
+		case sig >= 40:
+			out = fmt.Sprintf("^i(%s)", xbm("wifi-mid"))
+		default:
+			out = fmt.Sprintf("^i(%s)", xbm("wifi-low"))
+		}
 	case "ethernet":
 	default:
-		out = fmt.Sprintf("^i(%s)", xbm("net-wired2"))
+		out = fmt.Sprintf("^i(%s)", xbm("net-wired"))
 	}
 
 	out += " " + network_traffic(nw_current.rx, stats.rx, DOWNLOAD)
@@ -105,9 +122,10 @@ func network_stats() (string, error) {
 }
 
 func network_device_bytes(dev, typ string) (int64, error) {
-	data, err := ioutil.ReadFile("/sys/class/net/" + dev + "/statistics/" + typ + "_bytes")
+	fp := "/sys/class/net/" + dev + "/statistics/" + typ + "_bytes"
+	data, err := ioutil.ReadFile(fp)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("could not read %s - %s", fp, err)
 	}
 
 	return strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
@@ -123,13 +141,5 @@ func network_traffic(prev, next int64, typ string) string {
 		format = "^fg(" + nw_colors[typ] + ")" + format
 	}
 
-	var traffic string
-	switch {
-	case nb >= MB:
-		traffic = fmt.Sprintf("%d MB", nb/MB)
-	default:
-		traffic = fmt.Sprintf("%d KB", nb)
-	}
-
-	return fmt.Sprintf(format, traffic)
+	return fmt.Sprintf(format, fmt.Sprintf("%d KB", nb))
 }

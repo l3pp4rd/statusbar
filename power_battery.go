@@ -23,7 +23,7 @@ func (src *pw_sources) is_on_ac() (bool, error) {
 
 	data, err := exec.Command("upower", "-i", src.ac).Output()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("upower cmd is on AC: %s", err)
 	}
 	m := ac_check.FindStringSubmatch(string(data))
 	if len(m) != 2 {
@@ -40,7 +40,7 @@ func (src *pw_sources) battery_percent() (int, error) {
 
 	data, err := exec.Command("upower", "-i", src.battery).Output()
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("upower battery percent check: %s", err)
 	}
 	m := bat_check.FindStringSubmatch(string(data))
 	if len(m) != 2 {
@@ -56,7 +56,7 @@ func power_battery() (string, error) {
 	if pw_found == nil {
 		src, err := power_detect_sources()
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("detect power sources: %s", err)
 		}
 		pw_found = src
 	}
@@ -75,17 +75,20 @@ func power_battery() (string, error) {
 		return "", err
 	}
 
-	var color string
+	var color, icon string
 	switch {
 	case perc <= 20:
+		icon = xbm("bat-low")
 		color = "#dc322f"
 	case perc <= 50:
+		icon = xbm("bat-mid")
 		color = "#b58900"
 	default:
+		icon = xbm("bat-full")
 		color = "#859900"
 	}
 
-	return fmt.Sprintf("^fg(%s)%d%%^i(%s)^fg()", color, perc, xbm("power-bat")), nil
+	return fmt.Sprintf("^fg(%s)%d%%^i(%s)^fg()", color, perc, icon), nil
 }
 
 func power_detect_sources() (*pw_sources, error) {
@@ -96,7 +99,7 @@ func power_detect_sources() (*pw_sources, error) {
 
 	data, err := exec.Command("upower", "-e").Output()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("upower enumerate command: %s", err)
 	}
 
 	lines := strings.Split(strings.TrimSpace(string(data)), "\n")

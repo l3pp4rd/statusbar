@@ -27,7 +27,7 @@ func (bar *statusbar) run() []string {
 		go func(name string, elem element) {
 			part, err := elem()
 			if err != nil {
-				log.Println(err)
+				log.Printf("failed to load: %s element, reason: %s\n", name, err)
 			}
 			bar.Lock()
 			bar.results[name] = part

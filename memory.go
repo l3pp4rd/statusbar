@@ -13,7 +13,7 @@ var match_mem = regexp.MustCompile(`Mem:\s+(.+)`)
 func memory_usage() (string, error) {
 	data, err := exec.Command("free", "-m").Output()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("'free -m' command: %s", err)
 	}
 
 	m := match_mem.FindStringSubmatch(string(data))
@@ -24,11 +24,11 @@ func memory_usage() (string, error) {
 	parts := strings.Fields(m[1])
 	total, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("read total memory: %s", err)
 	}
 	avail, err := strconv.Atoi(parts[5])
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("read available memory: %s", err)
 	}
 	used := total - avail
 	perc := 100 * used / total
