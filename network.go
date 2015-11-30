@@ -23,12 +23,28 @@ var nw_colors = map[string]string{
 var nw_current *nw_stats
 
 type nw_stats struct {
-	device, typ string
-	rx, tx      int64
+	device, typ, ssid string
+	rx, tx            int64
+}
+
+func (s *nw_stats) signal_strength() (int, error) {
+	lines, err := exec.Command("nmcli", "-t", "-f", "SSID,SIGNAL", "device", "wifi", "list").Output()
+	if err != nil {
+		return 0, err
+	}
+	for _, ln := range strings.Split(string(lines), "\n") {
+		parts := strings.Split(strings.TrimSpace(ln), ":")
+		if parts[0] != s.ssid {
+			continue
+		}
+
+		return strconv.Atoi(parts[1])
+	}
+	return 0, nil
 }
 
 func network_stats() (string, error) {
-	lines, err := exec.Command("nmcli", "-t", "-f", "DEVICE,TYPE,STATE", "device", "status").Output()
+	lines, err := exec.Command("nmcli", "-t", "-f", "DEVICE,TYPE,STATE,CONNECTION", "device", "status").Output()
 	if err != nil {
 		return "", err
 	}
@@ -36,6 +52,9 @@ func network_stats() (string, error) {
 	var stats *nw_stats
 	for _, ln := range strings.Split(string(lines), "\n") {
 		parts := strings.Split(strings.TrimSpace(ln), ":")
+		if len(parts) != 4 {
+			continue
+		}
 		if parts[2] != "connected" {
 			continue
 		}
@@ -43,6 +62,7 @@ func network_stats() (string, error) {
 		stats = &nw_stats{
 			device: parts[0],
 			typ:    parts[1],
+			ssid:   parts[3],
 		}
 		break
 	}
@@ -67,7 +87,22 @@ func network_stats() (string, error) {
 	var out string
 	switch stats.typ {
 	case "wifi":
+		// sig, err := stats.signal_strength()
+		// if err != nil {
+		// 	return out, err
+		// }
+		// switch {
+		// case sig >= 80:
 		out = fmt.Sprintf("^i(%s)", xbm("net-wifi5"))
+		// case sig >= 60:
+		// 	out = fmt.Sprintf("^i(%s)", xbm("net-wifi"))
+		// case sig >= 40:
+		// 	out = fmt.Sprintf("^i(%s)", xbm("net-wifi3"))
+		// case sig >= 20:
+		// 	out = fmt.Sprintf("^i(%s)", xbm("net-wifi"))
+		// default:
+		// 	out = fmt.Sprintf("^i(%s)", xbm("net-wifi"))
+		// }
 	case "ethernet":
 	default:
 		out = fmt.Sprintf("^i(%s)", xbm("net-wired2"))
