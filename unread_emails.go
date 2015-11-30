@@ -78,7 +78,7 @@ func unread_email_representation(counts []int) string {
 		out = "^i(" + xbm("mail") + ")"
 		for _, c := range counts {
 			if c > 0 {
-				out += fmt.Sprintf(" ^fg(#dc322f)%d^fg()")
+				out += fmt.Sprintf(" ^fg(#dc322f)%d^fg()", c)
 			} else {
 				out += fmt.Sprintf(" %d", c)
 			}

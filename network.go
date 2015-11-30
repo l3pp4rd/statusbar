@@ -46,16 +46,20 @@ func (s *nw_stats) signal_strength() (int, error) {
 func network_stats() (string, error) {
 	lines, err := exec.Command("nmcli", "-t", "-f", "DEVICE,TYPE,STATE,CONNECTION", "device", "status").Output()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("nmcli failed to get information on devices: %s", err)
 	}
 
 	var stats *nw_stats
 	for _, ln := range strings.Split(string(lines), "\n") {
 		parts := strings.Split(strings.TrimSpace(ln), ":")
-		if len(parts) != 4 {
+		switch {
+		case len(parts) != 4:
 			continue
-		}
-		if parts[2] != "connected" {
+		case parts[1] == "bridge":
+			continue
+		case parts[1] == "loopback":
+			continue
+		case parts[2] != "connected":
 			continue
 		}
 
@@ -87,22 +91,7 @@ func network_stats() (string, error) {
 	var out string
 	switch stats.typ {
 	case "wifi":
-		// sig, err := stats.signal_strength()
-		// if err != nil {
-		// 	return out, err
-		// }
-		// switch {
-		// case sig >= 80:
 		out = fmt.Sprintf("^i(%s)", xbm("net-wifi5"))
-		// case sig >= 60:
-		// 	out = fmt.Sprintf("^i(%s)", xbm("net-wifi"))
-		// case sig >= 40:
-		// 	out = fmt.Sprintf("^i(%s)", xbm("net-wifi3"))
-		// case sig >= 20:
-		// 	out = fmt.Sprintf("^i(%s)", xbm("net-wifi"))
-		// default:
-		// 	out = fmt.Sprintf("^i(%s)", xbm("net-wifi"))
-		// }
 	case "ethernet":
 	default:
 		out = fmt.Sprintf("^i(%s)", xbm("net-wired2"))

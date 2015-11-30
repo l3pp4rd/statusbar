@@ -12,7 +12,6 @@ import (
 const (
 	INTERVAL_SECS = 1
 
-	CPU_TEMP_FILE = "/sys/class/thermal/thermal_zone0/temp"
 	CPU_LOAD_FILE = "/proc/loadavg"
 
 	EMAIL_FEED           = "https://mail.google.com/a/gmail.com/feed/atom"

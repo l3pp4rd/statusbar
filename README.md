@@ -19,6 +19,7 @@ Currently it provides these details:
 You may need to install:
 
 - **dzen2** is the package used to render the status bar on your X11 screen
+- **lm_sensors** for cpu temperature detection.
 - **upower** package to provide battery and AC usage details.
 - **networkmanager** which provides __nmcli__ command for network details. Most probably your system uses network manager by default.
 
