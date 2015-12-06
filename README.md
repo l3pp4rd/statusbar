@@ -5,7 +5,7 @@ Currently it provides these details:
 
 ## Screenshot
 
-![Screenshot](https://cloud.githubusercontent.com/assets/132389/11459250/ff0406d4-96da-11e5-8afa-73721233b6f6.png)
+![Screenshot](https://cloud.githubusercontent.com/assets/132389/11613209/8c0a3260-9c21-11e5-8588-16418956562d.png)
 
 - shows active keyboard layout.
 - **network** connection details, wifi or ethernet, upload and download speeds. (**nmcli** is required)
@@ -44,6 +44,4 @@ Now you can run:
     statusbar emails.json | dzen2 -x -820 -y 0 -bg '#073642' -fg '#839496' -ta r -p -fn 'InconsolataSansMono:size=11' -h 19 -w 710
 
 **NOTE:** you may change these properties based on your screen layout and fonts.
-
-![Screenshot](https://cloud.githubusercontent.com/assets/132389/11459253/0ffa8616-96db-11e5-952b-de3d27c5f792.png)
 
