@@ -34,7 +34,7 @@ func (s *nw_stats) signal_strength() (int, error) {
 	}
 	for _, ln := range strings.Split(string(lines), "\n") {
 		parts := strings.Split(strings.TrimSpace(ln), ":")
-		if parts[0] != s.ssid {
+		if strings.Index(s.ssid, parts[0]) == -1 {
 			continue
 		}
 
