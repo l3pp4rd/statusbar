@@ -1,13 +1,16 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"sync"
+	"time"
 )
 
 type gmail struct {
@@ -27,7 +30,9 @@ type gmail struct {
 
 func new_gmail_client(confPath string) (*gmail, error) {
 	gm := &gmail{
-		client:    &http.Client{},
+		client: &http.Client{
+			Timeout: 5 * time.Second,
+		},
 		iteration: EMAIL_PER_ITERATIONS - 1,
 	}
 
@@ -38,6 +43,20 @@ func new_gmail_client(confPath string) (*gmail, error) {
 
 	if err = json.Unmarshal(file, &gm.accounts); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal gmail config file: %s - %s", confPath, err)
+	}
+
+	gm.client.Transport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		Dial: (&net.Dialer{
+			Timeout:   3 * time.Second,
+			KeepAlive: 60 * time.Second,
+		}).Dial,
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+		TLSHandshakeTimeout:   3 * time.Second,
+		MaxIdleConnsPerHost:   len(gm.accounts),
+		DisableCompression:    true,
+		DisableKeepAlives:     true,
+		ResponseHeaderTimeout: 3 * time.Second,
 	}
 
 	for _ = range gm.accounts {
@@ -58,9 +77,9 @@ func (gm *gmail) fetch(usr, psw string) (c int, err error) {
 	if err != nil {
 		return
 	}
-	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
+		res.Body.Close()
 		return c, fmt.Errorf(res.Status)
 	}
 
@@ -69,8 +88,10 @@ func (gm *gmail) fetch(usr, psw string) (c int, err error) {
 	}{}
 	err = xml.NewDecoder(res.Body).Decode(&data)
 	if err != nil {
+		res.Body.Close()
 		return
 	}
+	res.Body.Close()
 	return data.Count, nil
 }
 
