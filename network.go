@@ -59,13 +59,17 @@ func network_stats() (string, error) {
 		parts := strings.Split(strings.TrimSpace(ln), ":")
 		switch {
 		case len(parts) != 4:
-			continue
+			continue // making sure has number of sections required
 		case parts[1] == "bridge":
-			continue
+			continue // filter bridge interfaces
 		case parts[1] == "loopback":
-			continue
+			continue // filter loopback interfaces
 		case parts[2] != "connected":
-			continue
+			continue // filter out divices which are not connected
+		case strings.Index(parts[0], "dock") == 0:
+			continue // filter out docker connections
+		case strings.Index(parts[0], "veth") == 0:
+			continue // filter out docker connections
 		}
 
 		stats = &nw_stats{
