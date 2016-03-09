@@ -114,6 +114,7 @@ func network_stats() (string, error) {
 			out = fmt.Sprintf("^i(%s)", xbm("wifi-low"))
 		}
 	case "ethernet":
+		out = fmt.Sprintf("^i(%s)", xbm("net-wired"))
 	default:
 		out = fmt.Sprintf("^i(%s)", xbm("net-wired"))
 	}
