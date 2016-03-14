@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 )
 
 const (
@@ -26,9 +25,8 @@ func xbm(name string) string {
 }
 
 func main() {
-	var emailConfPath string
-	if len(os.Args) > 1 {
-		emailConfPath = os.Args[1]
+	if len(os.Args) < 2 {
+		log.Fatal("expected configuration file path as first argument")
 	}
 	f, err := os.OpenFile(LOG_FILE, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -41,25 +39,9 @@ func main() {
 		log.Fatalf("asset initialization failed: %s", err)
 	}
 
-	bar := &statusbar{
-		results:  make(map[string]string),
-		elements: make(map[string]element),
-	}
-
-	bar.reg("keyboard", keyboard_layout)
-	if len(emailConfPath) > 0 {
-		bar.reg("emails", unread_emails(emailConfPath))
-	}
-	bar.reg("network", network_stats)
-	bar.reg("temp", cpu_temp)
-	bar.reg("power", power_battery)
-	bar.reg("load", cpu_load)
-	bar.reg("memory", memory_usage)
-	bar.reg("date", date)
-
-	for {
-		fmt.Println(strings.Join(bar.run(), " "))
-		time.Sleep(time.Second * INTERVAL_SECS)
+	if err := run(os.Args[1]); err != nil {
+		// @TODO: may rerun the command if broken pipe error
+		log.Fatalf("statusbar failed: %s", err)
 	}
 }
 

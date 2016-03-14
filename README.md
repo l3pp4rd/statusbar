@@ -27,21 +27,29 @@ You may need to install:
 
 You must have **go** installed on your system.
 
-This repository is meant to be editable to your own needs, so fork or clone and edit.
+This repository is meant to be editable to your own needs, so fork or
+clone and edit. Create your statusbar configuration:
 
-If you have gmail accounts, create a config based on **emails.dist.json**.
+    cp statusbar.dist.json statusbar.json
+
+**NOTE:** the arguments for **dzen2** output formatting should be changed
+on your needs including **gmail** accounts if available.
 
 Installs **go-bindata** on your GOPATH
 
     make deps
 
-If you run `make` it will build and move binary to **/usr/local/bin/statusbar**.
+If you run `make` it will build and move binary to
+**/usr/local/bin/statusbar** and statusbar.json if available, to
+**/usr/local/etc/statusbar.json**.
 
     make
 
-Now you can run:
+Now you can run statusbar which takes configuration option json as an
+argument:
 
-    statusbar emails.json | dzen2 -x -820 -y 0 -bg '#073642' -fg '#839496' -ta r -p -fn 'InconsolataSansMono:size=11' -h 19 -w 710
+    statusbar statusbar.json
 
-**NOTE:** you may change these properties based on your screen layout and fonts.
+**NOTE:** you may change configuration properties based on your screen
+layout and fonts.
 

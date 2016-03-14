@@ -1,0 +1,23 @@
+{
+  "gmail": [
+    {
+      "username": "john.doe@gmail.com",
+      "password": "secret"
+    },
+    {
+      "username": "jone.doe@gmail.com",
+      "password": "secret"
+    }
+  ],
+  "dzen2": [
+    "-x", "-820",
+    "-y", "0",
+    "-bg", "#073642",
+    "-fg", "#839496",
+    "-ta", "r",
+    "-p",
+    "-fn", "LiberationSerif:style=Bold:size=11",
+    "-h", "19",
+    "-w", "710"
+  ]
+}

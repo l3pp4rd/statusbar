@@ -2,10 +2,8 @@ package main
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -13,13 +11,15 @@ import (
 	"time"
 )
 
+type gmailAccount struct {
+	Username, Password string
+}
+
 type gmail struct {
 	sync.WaitGroup
 	sync.Mutex
 
-	accounts []struct {
-		Username, Password string
-	}
+	accounts []gmailAccount
 
 	client *http.Client
 
@@ -28,21 +28,13 @@ type gmail struct {
 	results   map[string]int
 }
 
-func new_gmail_client(confPath string) (*gmail, error) {
+func new_gmail_client(accounts []gmailAccount) *gmail {
 	gm := &gmail{
 		client: &http.Client{
 			Timeout: 5 * time.Second,
 		},
+		accounts:  accounts,
 		iteration: EMAIL_PER_ITERATIONS - 1,
-	}
-
-	file, err := ioutil.ReadFile(confPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read gmail account config file: %s - %s", confPath, err)
-	}
-
-	if err = json.Unmarshal(file, &gm.accounts); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal gmail config file: %s - %s", confPath, err)
 	}
 
 	gm.client.Transport = &http.Transport{
@@ -64,7 +56,7 @@ func new_gmail_client(confPath string) (*gmail, error) {
 	}
 
 	gm.results = make(map[string]int, len(gm.accounts))
-	return gm, nil
+	return gm
 }
 
 func (gm *gmail) fetch(usr, psw string) (c int, err error) {
@@ -95,13 +87,8 @@ func (gm *gmail) fetch(usr, psw string) (c int, err error) {
 	return data.Count, nil
 }
 
-func unread_emails(confPath string) element {
-	gm, err := new_gmail_client(confPath)
-	if err != nil {
-		return func() (string, error) {
-			return "", err
-		}
-	}
+func unread_emails(accounts []gmailAccount) element {
+	gm := new_gmail_client(accounts)
 
 	return func() (string, error) {
 		if gm.iteration < EMAIL_PER_ITERATIONS {
