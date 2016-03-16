@@ -16,8 +16,7 @@ const (
 	EMAIL_FEED           = "https://mail.google.com/a/gmail.com/feed/atom"
 	EMAIL_PER_ITERATIONS = 30 // every 30 seconds if interval is 1s
 
-	LOG_FILE = "/tmp/statusbar.log"
-	XBM_DIR  = "/tmp/statusbar_xbm"
+	XBM_DIR = "/tmp/statusbar_xbm"
 )
 
 func xbm(name string) string {
@@ -26,21 +25,14 @@ func xbm(name string) string {
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatal("expected configuration file path as first argument")
+		log.Fatal("expected configuration file path as first the argument")
 	}
-	f, err := os.OpenFile(LOG_FILE, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %s - %v", LOG_FILE, err)
-	}
-	defer f.Close()
-	log.SetOutput(f)
 
 	if err := init_assets(); err != nil {
 		log.Fatalf("asset initialization failed: %s", err)
 	}
 
 	if err := run(os.Args[1]); err != nil {
-		// @TODO: may rerun the command if broken pipe error
 		log.Fatalf("statusbar failed: %s", err)
 	}
 }

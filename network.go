@@ -38,6 +38,11 @@ func (s *nw_stats) signal_strength() (int, error) {
 			continue
 		}
 
+		if len(parts) < 2 {
+			// signal strength is not available yet
+			return 0, nil
+		}
+
 		sig, err := strconv.Atoi(parts[1])
 		if err != nil {
 			return 0, fmt.Errorf("wifi signal strength to int: %s", err)

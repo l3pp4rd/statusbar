@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -79,17 +78,6 @@ func run(conf string) error {
 	}()
 
 	return cmd.Wait()
-}
-
-func (bar *statusbar) output() {
-	cmd := exec.Command("dzen2", bar.Dzen2...)
-	in := strings.Join(bar.iterate(), " ")
-	log.Println(in)
-	cmd.Stdin = bytes.NewBufferString(in)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("dzen2 command failed with err: %s and output: %s\n", err, string(out))
-	}
 }
 
 func (bar *statusbar) iterate() []string {

@@ -46,8 +46,8 @@ func new_gmail_client(accounts []gmailAccount) *gmail {
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 		TLSHandshakeTimeout:   3 * time.Second,
 		MaxIdleConnsPerHost:   len(gm.accounts),
-		DisableCompression:    true,
-		DisableKeepAlives:     true,
+		DisableCompression:    false,
+		DisableKeepAlives:     false,
 		ResponseHeaderTimeout: 3 * time.Second,
 	}
 
@@ -83,8 +83,8 @@ func (gm *gmail) fetch(usr, psw string) (c int, err error) {
 		res.Body.Close()
 		return
 	}
-	res.Body.Close()
-	return data.Count, nil
+
+	return data.Count, res.Body.Close()
 }
 
 func unread_emails(accounts []gmailAccount) element {

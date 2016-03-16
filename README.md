@@ -1,4 +1,4 @@
-# Status bar
+# Statusbar
 
 This is a statusbar for a **linux** window managers written in **golang**.
 Currently it provides these details:
@@ -8,16 +8,19 @@ Currently it provides these details:
 ![Screenshot](https://cloud.githubusercontent.com/assets/132389/11613209/8c0a3260-9c21-11e5-8588-16418956562d.png)
 
 - shows active keyboard layout.
-- **network** connection details, wifi or ethernet, upload and download speeds. (**nmcli** is required)
-- unread gmail email counts for multiple accounts in given order.
+- **gmail** account unread email counts in configured order.
+- **network** connection details, **wifi** or **ethernet**, upload and
+  download speeds. (**nmcli** is required)
 - **cpu** temperature.
+- **power** details, **AC** if on power cable, or remaining **battery**
+  percentage.
 - **cpu** load.
-- **memory** usage.
-- **power** details, AC if on power cable, or remaining **battery** percentage.
-- **date** local date and time.
+- **memory** utilization percent.
+- **date** local date and time, plus one in different timezone in my case.
 
-You may need to install:
+## Requirements
 
+- **go** in order to compile statusbar.
 - **dzen2** is the package used to render the status bar on your X11 screen
 - **lm_sensors** for cpu temperature detection.
 - **upower** package to provide battery and AC usage details.
@@ -48,8 +51,9 @@ If you run `make` it will build and move binary to
 Now you can run statusbar which takes configuration option json as an
 argument:
 
-    statusbar statusbar.json
+    statusbar statusbar.json > /tmp/statusbar.log 2>&1
 
 **NOTE:** you may change configuration properties based on your screen
-layout and fonts.
+layout and fonts. Statusbar logs errors to **stdout** and in case of panic
+to **stderr**.
 
