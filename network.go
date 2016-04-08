@@ -86,7 +86,7 @@ func network_stats() (string, error) {
 	}
 
 	if nil == stats {
-		return fmt.Sprintf("^i(%s)", xbm("net-wired")), nil
+		return fmt.Sprintf("^fg(#dc322f)^i(%s)^fg()", xbm("disconnected")), nil
 	}
 
 	stats.rx, err = network_device_bytes(stats.device, DOWNLOAD)
