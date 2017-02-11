@@ -38,18 +38,14 @@ clone and edit. Create your statusbar configuration:
 **NOTE:** the arguments for **dzen2** output formatting should be changed
 on your needs including **gmail** accounts if available.
 
-Installs **go-bindata** on your GOPATH
-
-    make deps
-
 If you run `make` it will build and move binary to
 **/usr/local/bin/statusbar** and statusbar.json if available, to
 **/usr/local/etc/statusbar.json**.
 
     make
 
-Now you can run statusbar which takes configuration option json as an
-argument:
+If dependencies were not met, install them. Now you can run statusbar
+which takes configuration option json as an argument:
 
     statusbar statusbar.json > /tmp/statusbar.log 2>&1
 
