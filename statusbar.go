@@ -7,55 +7,42 @@ import (
 	"log"
 	"os/exec"
 	"strings"
-	"sync"
 	"time"
 )
 
-type element func() (string, error)
+type element interface {
+	value() string
+}
 
 type statusbar struct {
-	sync.Mutex
-	sync.WaitGroup
-
-	order    []string
-	elements map[string]element
-	results  map[string]string
+	elements []element
 
 	// configuration properties
 	Dzen2 []string
 	Gmail []gmailAccount
 }
 
-func (bar *statusbar) reg(name string, el element) {
-	bar.elements[name] = el
-	bar.order = append(bar.order, name)
-}
-
 func run(conf string) error {
-	bar := &statusbar{
-		results:  make(map[string]string),
-		elements: make(map[string]element),
-	}
-
+	var bar statusbar
 	file, err := ioutil.ReadFile(conf)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %s - %s", conf, err)
 	}
 
-	if err := json.Unmarshal(file, bar); err != nil {
+	if err := json.Unmarshal(file, &bar); err != nil {
 		return fmt.Errorf("failed to unmarshal config file: %s - %s", conf, err)
 	}
 
-	bar.reg("keyboard", keyboard_layout)
+	bar.elements = append(bar.elements, keyboard())
 	if len(bar.Gmail) > 0 {
-		bar.reg("emails", unread_emails(bar.Gmail))
+		bar.elements = append(bar.elements, emails(bar.Gmail))
 	}
-	bar.reg("network", network_stats)
-	bar.reg("temp", cpu_temp)
-	bar.reg("power", power_battery)
-	bar.reg("load", cpu_load)
-	bar.reg("memory", memory_usage)
-	bar.reg("date", date)
+	bar.elements = append(bar.elements, network())
+	bar.elements = append(bar.elements, cpu_temp())
+	bar.elements = append(bar.elements, power())
+	bar.elements = append(bar.elements, cpu_load())
+	bar.elements = append(bar.elements, memory_usage())
+	bar.elements = append(bar.elements, date())
 
 	cmd := exec.Command("dzen2", bar.Dzen2...)
 	stdin, err := cmd.StdinPipe()
@@ -81,24 +68,9 @@ func run(conf string) error {
 }
 
 func (bar *statusbar) iterate() []string {
-	bar.Add(len(bar.elements))
-	for nm, el := range bar.elements {
-		go func(name string, elem element) {
-			part, err := elem()
-			if err != nil {
-				log.Printf("failed to load: %s element, reason: %s\n", name, err)
-			}
-			bar.Lock()
-			bar.results[name] = part
-			bar.Unlock()
-			bar.Done()
-		}(nm, el)
-	}
-	bar.Wait()
-
 	var res []string
-	for _, ordered := range bar.order {
-		res = append(res, bar.results[ordered])
+	for _, el := range bar.elements {
+		res = append(res, el.value())
 	}
 	return res
 }

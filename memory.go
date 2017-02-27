@@ -2,15 +2,40 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var match_mem = regexp.MustCompile(`Mem:\s+(.+)`)
 
-func memory_usage() (string, error) {
+type Memory struct {
+	val string
+}
+
+func (k *Memory) value() string {
+	return k.val
+}
+
+func memory_usage() element {
+	e := &Memory{}
+	go func() {
+		for {
+			if val, err := e.read(); err == nil {
+				e.val = val
+			} else {
+				log.Printf("could not read memory usage: %v", err)
+			}
+			time.Sleep(time.Second)
+		}
+	}()
+	return e
+}
+
+func (k *Memory) read() (string, error) {
 	data, err := exec.Command("free", "-m").Output()
 	if err != nil {
 		return "", fmt.Errorf("'free -m' command: %s", err)

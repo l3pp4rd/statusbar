@@ -3,11 +3,36 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
-func cpu_load() (string, error) {
+type CpuLoad struct {
+	val string
+}
+
+func (k *CpuLoad) value() string {
+	return k.val
+}
+
+func cpu_load() element {
+	e := &CpuLoad{}
+	go func() {
+		for {
+			if val, err := e.read(); err == nil {
+				e.val = val
+			} else {
+				log.Printf("could not read cpu load: %v", err)
+			}
+			time.Sleep(time.Second)
+		}
+	}()
+	return e
+}
+
+func (k *CpuLoad) read() (string, error) {
 	data, err := ioutil.ReadFile(CPU_LOAD_FILE)
 	if err != nil {
 		return "", fmt.Errorf("read cpu load from %s - %s", CPU_LOAD_FILE, err)

@@ -2,12 +2,37 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 )
 
-func keyboard_layout() (string, error) {
+type Keyboard struct {
+	val string
+}
+
+func (k *Keyboard) value() string {
+	return k.val
+}
+
+func keyboard() element {
+	e := &Keyboard{}
+	go func() {
+		for {
+			if val, err := e.layout(); err == nil {
+				e.val = val
+			} else {
+				log.Printf("could not read keyboard layout: %v", err)
+			}
+			time.Sleep(time.Second)
+		}
+	}()
+	return e
+}
+
+func (k *Keyboard) layout() (string, error) {
 	data, err := exec.Command("setxkbmap", "-print").Output()
 	if err != nil {
 		return "", fmt.Errorf("'setxkbmap -print' command: %s", err)

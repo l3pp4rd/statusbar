@@ -2,14 +2,39 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 	"regexp"
 	"strconv"
+	"time"
 )
 
 var match_temp = regexp.MustCompile(`Core\s+\d+:\s+\+([\d]+)`)
 
-func cpu_temp() (string, error) {
+type CpuTemp struct {
+	val string
+}
+
+func (k *CpuTemp) value() string {
+	return k.val
+}
+
+func cpu_temp() element {
+	e := &CpuTemp{}
+	go func() {
+		for {
+			if val, err := e.read(); err == nil {
+				e.val = val
+			} else {
+				log.Printf("could not read cpu temp: %v", err)
+			}
+			time.Sleep(time.Second * 2)
+		}
+	}()
+	return e
+}
+
+func (k *CpuTemp) read() (string, error) {
 	data, err := exec.Command("sensors").Output()
 	if err != nil {
 		return "", fmt.Errorf("'sensors' command: %s", err)

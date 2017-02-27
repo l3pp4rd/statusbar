@@ -13,8 +13,7 @@ const (
 
 	CPU_LOAD_FILE = "/proc/loadavg"
 
-	EMAIL_FEED           = "https://mail.google.com/a/gmail.com/feed/atom"
-	EMAIL_PER_ITERATIONS = 30 // every 30 seconds if interval is 1s
+	EMAIL_FEED = "https://mail.google.com/a/gmail.com/feed/atom"
 
 	XBM_DIR = "/tmp/statusbar_xbm"
 )
