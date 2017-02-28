@@ -11,8 +11,6 @@ import (
 const (
 	INTERVAL_SECS = 1
 
-	CPU_LOAD_FILE = "/proc/loadavg"
-
 	EMAIL_FEED = "https://mail.google.com/a/gmail.com/feed/atom"
 
 	XBM_DIR = "/tmp/statusbar_xbm"
@@ -68,4 +66,9 @@ func init_assets() error {
 		file.Close()
 	}
 	return nil
+}
+
+func file_exists(p string) bool {
+	_, err := os.Stat(p)
+	return !os.IsNotExist(err)
 }

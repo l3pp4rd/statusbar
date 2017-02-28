@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -157,11 +156,6 @@ func (n *Network) devices() error {
 	}
 
 	return nil
-}
-
-func file_exists(p string) bool {
-	_, err := os.Stat(p)
-	return !os.IsNotExist(err)
 }
 
 var trimSpaces = regexp.MustCompile("\\s+")

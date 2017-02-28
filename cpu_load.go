@@ -33,9 +33,9 @@ func cpu_load() element {
 }
 
 func (k *CpuLoad) read() (string, error) {
-	data, err := ioutil.ReadFile(CPU_LOAD_FILE)
+	data, err := ioutil.ReadFile("/proc/loadavg")
 	if err != nil {
-		return "", fmt.Errorf("read cpu load from %s - %s", CPU_LOAD_FILE, err)
+		return "", fmt.Errorf("read cpu load from %s - %s", "/proc/loadavg", err)
 	}
 
 	parts := strings.Split(strings.TrimSpace(string(data)), " ")

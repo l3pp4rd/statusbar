@@ -12,8 +12,6 @@ assets.go:
 deps:
 	@$(call installed,go)
 	@$(call installed,dzen2)
-	@$(call installed,nmcli)
-	@$(call installed,sensors)
 	@$(call installed,setxkbmap)
 	@$(call installed,upower)
 

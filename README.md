@@ -7,10 +7,10 @@ Currently it provides these details:
 
 ![Screenshot](https://cloud.githubusercontent.com/assets/132389/11613209/8c0a3260-9c21-11e5-8588-16418956562d.png)
 
-- shows active keyboard layout.
+- shows active keyboard layout, using **setxkbmap**.
 - **gmail** account unread email counts in configured order.
 - **network** connection details, **wifi** or **ethernet**, upload and
-  download speeds. (**nmcli** is required)
+  download speeds.
 - **cpu** temperature.
 - **power** details, **AC** if on power cable, or remaining **battery**
   percentage.
@@ -22,9 +22,7 @@ Currently it provides these details:
 
 - **go** in order to compile statusbar.
 - **dzen2** is the package used to render the status bar on your X11 screen
-- **lm_sensors** for cpu temperature detection.
 - **upower** package to provide battery and AC usage details.
-- **networkmanager** which provides __nmcli__ command for network details. Most probably your system uses network manager by default.
 
 ## Installation
 

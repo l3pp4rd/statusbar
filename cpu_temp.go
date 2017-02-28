@@ -2,17 +2,19 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
-	"os/exec"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
 var match_temp = regexp.MustCompile(`Core\s+\d+:\s+\+([\d]+)`)
 
 type CpuTemp struct {
-	val string
+	val    string
+	inputs []string
 }
 
 func (k *CpuTemp) value() string {
@@ -21,6 +23,25 @@ func (k *CpuTemp) value() string {
 
 func cpu_temp() element {
 	e := &CpuTemp{}
+	// collect temp inputs, this may vary based on different kernels
+	for i := 1; i < 128; i++ { // might have 128 cores?
+		p := fmt.Sprintf("/sys/class/hwmon/hwmon0/temp%d_input", i)
+		if file_exists(p) {
+			e.inputs = append(e.inputs, p)
+		} else {
+			break
+		}
+	}
+	if len(e.inputs) == 0 {
+		// look elsewhere
+		p := "/sys/class/thermal/thermal_zone0/temp"
+		if file_exists(p) {
+			e.inputs = append(e.inputs, p)
+		}
+	}
+	if len(e.inputs) == 0 {
+		log.Fatalf("could not determine CPU temperature inputs")
+	}
 	go func() {
 		for {
 			if val, err := e.read(); err == nil {
@@ -35,27 +56,22 @@ func cpu_temp() element {
 }
 
 func (k *CpuTemp) read() (string, error) {
-	data, err := exec.Command("sensors").Output()
-	if err != nil {
-		return "", fmt.Errorf("'sensors' command: %s", err)
-	}
-
-	var cores []int
-	var total int
-	for _, match := range match_temp.FindAllStringSubmatch(string(data), -1) {
-		core, err := strconv.Atoi(match[1])
+	var avg int
+	for _, in := range k.inputs {
+		data, err := ioutil.ReadFile(in)
 		if err != nil {
-			return "", fmt.Errorf("failed to parse cpu temp from: %s - %s", match[1], err)
+			return "", fmt.Errorf("failed to read temperature input: %s - %v", in, err)
 		}
-		cores = append(cores, core)
-		total += core
+
+		s := strings.TrimSpace(string(data))
+		i, err := strconv.Atoi(s)
+		if err != nil {
+			return "", fmt.Errorf("failed to read temperature input: %s - %v", in, err)
+		}
+		avg += i
 	}
 
-	if len(cores) == 0 {
-		return "", nil
-	}
-
-	c := total / len(cores)
+	c := avg / len(k.inputs) / 1000
 	var color string
 	switch {
 	case c >= 80:

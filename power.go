@@ -24,6 +24,7 @@ func (s *pw_sources) value() string {
 }
 
 func power() element {
+	// @TODO do not depend on upower
 	data, err := exec.Command("upower", "-e").Output()
 	if err != nil {
 		log.Fatalf("upower enumerate command: %s", err)
