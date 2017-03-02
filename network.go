@@ -43,12 +43,13 @@ func (n *Network) value() string {
 func network() element {
 	n := &Network{}
 	if err := n.devices(); err != nil {
-		log.Fatalf("failed to read network devices: %v", err)
+		log.Printf("failed to read network devices: %v\n", err)
+		return n
 	}
 	go func() {
 		for {
 			if err := n.stats(); err != nil {
-				log.Printf("could not read network stats: %v", err)
+				log.Printf("could not read network stats: %v\n", err)
 			}
 			time.Sleep(time.Second)
 		}

@@ -2,21 +2,18 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
-	"os/exec"
-	"regexp"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 )
 
-var ac_check = regexp.MustCompile(`online:\s+(.+)`)
-var bat_check = regexp.MustCompile(`percentage:\s+([^%]+)`)
-
 type pw_sources struct {
-	battery string
-	ac      string
-	val     string
+	AC        string
+	val       string
+	batteries []string
 }
 
 func (s *pw_sources) value() string {
@@ -24,83 +21,100 @@ func (s *pw_sources) value() string {
 }
 
 func power() element {
-	// @TODO do not depend on upower
-	data, err := exec.Command("upower", "-e").Output()
-	if err != nil {
-		log.Fatalf("upower enumerate command: %s", err)
+	e := &pw_sources{}
+	if err := e.prepare(); err != nil {
+		log.Printf("failed to prepare battery: %v\n", err)
+		return e
 	}
 
-	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
-	e := &pw_sources{}
-	for _, line := range lines {
-		if i := strings.Index(line, "_AC"); i != -1 {
-			e.ac = strings.TrimSpace(line)
-		} else if i := strings.Index(line, "_BAT"); i != -1 {
-			e.battery = strings.TrimSpace(line)
-		}
-	}
 	go func() {
 		for {
-			if val, err := e.read(); err == nil {
-				e.val = val
-			} else {
-				log.Printf("could not read power: %v", err)
-			}
+			e.val = e.read()
 			time.Sleep(time.Second * 3)
 		}
 	}()
 	return e
 }
 
-func (s *pw_sources) is_on_ac() (bool, error) {
-	if len(s.ac) == 0 {
-		return false, nil
-	}
-
-	data, err := exec.Command("upower", "-i", s.ac).Output()
+func (s *pw_sources) prepare() error {
+	devs, err := ioutil.ReadDir("/sys/class/power_supply")
 	if err != nil {
-		return false, fmt.Errorf("upower cmd is on AC: %s", err)
-	}
-	m := ac_check.FindStringSubmatch(string(data))
-	if len(m) != 2 {
-		return false, fmt.Errorf("number of matches was not expected for AC power check")
+		return err
 	}
 
-	return m[1] == "yes", nil
+	for _, dev := range devs {
+		d := filepath.Base(dev.Name())
+		p := filepath.Join("/sys/class/power_supply", d)
+		// filter out non devices
+		if !file_exists(filepath.Join(p, "device")) {
+			continue // not a physical device
+		}
+
+		// maybe battery
+		if strings.Index(d, "BAT") != -1 {
+			cap := filepath.Join(p, "capacity")
+			if !file_exists(cap) {
+				return fmt.Errorf("could not locate battery capacity stats at: %s", cap)
+			}
+			s.batteries = append(s.batteries, cap)
+		}
+
+		if d == "AC" {
+			s.AC = filepath.Join(p, "online")
+			if !file_exists(s.AC) {
+				return fmt.Errorf("could not locate AC online stat at: %s", s.AC)
+			}
+		}
+	}
+
+	return nil
 }
 
-func (s *pw_sources) battery_percent() (int, error) {
-	if len(s.battery) == 0 {
-		return 0, nil
+func (s *pw_sources) onAC() bool {
+	if len(s.batteries) == 0 {
+		return true
 	}
 
-	data, err := exec.Command("upower", "-i", s.battery).Output()
+	if len(s.AC) == 0 {
+		return false // should not be the case
+	}
+
+	dat, err := ioutil.ReadFile(s.AC)
 	if err != nil {
-		return 0, fmt.Errorf("upower battery percent check: %s", err)
-	}
-	m := bat_check.FindStringSubmatch(string(data))
-	if len(m) != 2 {
-		return 0, fmt.Errorf("number of matches was not expected for BATTERY power check")
+		return false
 	}
 
-	return strconv.Atoi(m[1])
+	if strings.TrimSpace(string(dat)) == "0" {
+		return false
+	}
+
+	return true
 }
 
-func (s *pw_sources) read() (string, error) {
-	on, err := s.is_on_ac()
-	if err != nil {
-		return "", err
+func (s *pw_sources) battery() int {
+	if len(s.batteries) == 0 {
+		return 0 // no baterries
 	}
 
-	if on || len(s.battery) == 0 {
-		return "^i(" + xbm("power-ac") + ")", nil
+	var all int
+	for _, b := range s.batteries {
+		dat, err := ioutil.ReadFile(b)
+		if err != nil {
+			continue
+		}
+		i, _ := strconv.Atoi(strings.TrimSpace(string(dat)))
+		all += i
 	}
 
-	perc, err := s.battery_percent()
-	if err != nil {
-		return "", err
+	return all / len(s.batteries)
+}
+
+func (s *pw_sources) read() string {
+	if s.onAC() {
+		return "^i(" + xbm("power-ac") + ")"
 	}
 
+	perc := s.battery()
 	var color, icon string
 	switch {
 	case perc <= 20:
@@ -114,5 +128,5 @@ func (s *pw_sources) read() (string, error) {
 		color = "#859900"
 	}
 
-	return fmt.Sprintf("^fg(%s)%d%%^i(%s)^fg()", color, perc, icon), nil
+	return fmt.Sprintf("^fg(%s)%d%%^i(%s)^fg()", color, perc, icon)
 }

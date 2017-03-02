@@ -13,7 +13,6 @@ deps:
 	@$(call installed,go)
 	@$(call installed,dzen2)
 	@$(call installed,setxkbmap)
-	@$(call installed,upower)
 
 # checks whether a command is installed
 define installed =

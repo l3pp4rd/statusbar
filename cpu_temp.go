@@ -40,7 +40,8 @@ func cpu_temp() element {
 		}
 	}
 	if len(e.inputs) == 0 {
-		log.Fatalf("could not determine CPU temperature inputs")
+		log.Println("could not determine CPU temperature inputs")
+		return e
 	}
 	go func() {
 		for {

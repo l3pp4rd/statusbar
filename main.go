@@ -22,15 +22,15 @@ func xbm(name string) string {
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatal("expected configuration file path as first the argument")
+		log.Fatal("expected configuration file path as first the argument\n")
 	}
 
 	if err := init_assets(); err != nil {
-		log.Fatalf("asset initialization failed: %s", err)
+		log.Fatalf("asset initialization failed: %s\n", err)
 	}
 
 	if err := run(os.Args[1]); err != nil {
-		log.Fatalf("statusbar failed: %s", err)
+		log.Fatalf("statusbar failed: %s\n", err)
 	}
 }
 
