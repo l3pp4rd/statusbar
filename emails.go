@@ -23,8 +23,7 @@ type gmail struct {
 
 	client *http.Client
 
-	counts  []int
-	results map[string]int
+	counts []int
 }
 
 func emails(accounts []gmailAccount) element {
@@ -49,11 +48,7 @@ func emails(accounts []gmailAccount) element {
 		ResponseHeaderTimeout: 3 * time.Second,
 	}
 
-	for _ = range e.accounts {
-		e.counts = append(e.counts, 0)
-	}
-
-	e.results = make(map[string]int, len(e.accounts))
+	e.counts = make([]int, len(e.accounts))
 
 	go func() {
 		for {
@@ -94,26 +89,19 @@ func (g *gmail) fetch(usr, psw string) (c int, err error) {
 
 func (g *gmail) read() {
 	g.Add(len(g.accounts))
-	for _, acc := range g.accounts {
-		go func(u, p string) {
-			c, err := g.fetch(u, p)
-			if err != nil {
+	for i, acc := range g.accounts {
+		go func(u, p string, n int) {
+			if c, err := g.fetch(u, p); err != nil {
 				log.Printf("failed to fetch email count from: %s - %s\n", u, err)
-				c = 0
+			} else {
+				g.Lock()
+				g.counts[n] = c
+				g.Unlock()
 			}
-			g.Lock()
-			g.results[u] = c
-			g.Unlock()
 			g.Done()
-		}(acc.Username, acc.Password)
+		}(acc.Username, acc.Password, i)
 	}
 	g.Wait()
-
-	var counts []int
-	for _, acc := range g.accounts {
-		counts = append(counts, g.results[acc.Username])
-	}
-	g.counts = counts
 }
 
 func (g *gmail) value() string {

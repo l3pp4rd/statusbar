@@ -175,11 +175,6 @@ func (s *nw_stats) signal_strength() (int, error) {
 		ln = trimSpaces.ReplaceAllString(ln, " ")
 		parts := strings.Split(strings.TrimSpace(ln), " ")
 
-		// if len(parts) < 3 {
-		// 	// signal strength is not available yet
-		// 	return 0, nil
-		// }
-
 		sig, err := strconv.Atoi(strings.TrimRight(parts[2], "."))
 		if err != nil {
 			return 0, fmt.Errorf("wifi signal strength to int: %v", err)
