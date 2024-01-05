@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -33,7 +33,7 @@ func cpu_load() element {
 }
 
 func (k *CpuLoad) read() (string, error) {
-	data, err := ioutil.ReadFile("/proc/loadavg")
+	data, err := os.ReadFile("/proc/loadavg")
 	if err != nil {
 		return "", fmt.Errorf("read cpu load from %s - %s", "/proc/loadavg", err)
 	}

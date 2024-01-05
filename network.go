@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -59,8 +59,9 @@ func network() element {
 
 func (n *Network) stats() error {
 	var stats *nw_stats
-	for _, dev := range append(n.wireless, n.ethernet...) {
-		dat, err := ioutil.ReadFile(filepath.Join("/sys/class/net", dev, "operstate"))
+	// ethernet takes priority since usually it is faster and more reliable if wifi is also connected
+	for _, dev := range append(n.ethernet, n.wireless...) {
+		dat, err := os.ReadFile(filepath.Join("/sys/class/net", dev, "operstate"))
 		if err != nil {
 			continue // unreadable status
 		}
@@ -134,7 +135,7 @@ func (n *Network) stats() error {
 // see https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net
 // and http://unix.stackexchange.com/questions/40560/how-to-know-if-a-network-interface-is-tap-tun-bridge-or-physical
 func (n *Network) devices() error {
-	devs, err := ioutil.ReadDir("/sys/class/net")
+	devs, err := os.ReadDir("/sys/class/net")
 	if err != nil {
 		return err
 	}
@@ -162,7 +163,7 @@ func (n *Network) devices() error {
 var trimSpaces = regexp.MustCompile("\\s+")
 
 func (s *nw_stats) signal_strength() (int, error) {
-	dat, err := ioutil.ReadFile("/proc/net/wireless")
+	dat, err := os.ReadFile("/proc/net/wireless")
 	if err != nil {
 		return 0, fmt.Errorf("wifi signal strength: %v", err)
 	}
@@ -187,7 +188,7 @@ func (s *nw_stats) signal_strength() (int, error) {
 
 func network_device_bytes(dev, typ string) (int64, error) {
 	fp := "/sys/class/net/" + dev + "/statistics/" + typ + "_bytes"
-	data, err := ioutil.ReadFile(fp)
+	data, err := os.ReadFile(fp)
 	if err != nil {
 		return 0, fmt.Errorf("could not read %s - %s", fp, err)
 	}

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -37,7 +37,7 @@ func power() element {
 }
 
 func (s *pw_sources) prepare() error {
-	devs, err := ioutil.ReadDir("/sys/class/power_supply")
+	devs, err := os.ReadDir("/sys/class/power_supply")
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (s *pw_sources) onAC() bool {
 		return false // should not be the case
 	}
 
-	dat, err := ioutil.ReadFile(s.AC)
+	dat, err := os.ReadFile(s.AC)
 	if err != nil {
 		return false
 	}
@@ -98,7 +98,7 @@ func (s *pw_sources) battery() int {
 
 	var all int
 	for _, b := range s.batteries {
-		dat, err := ioutil.ReadFile(b)
+		dat, err := os.ReadFile(b)
 		if err != nil {
 			continue
 		}

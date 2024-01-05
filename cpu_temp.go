@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -59,7 +59,7 @@ func cpu_temp() element {
 func (k *CpuTemp) read() (string, error) {
 	var avg int
 	for _, in := range k.inputs {
-		data, err := ioutil.ReadFile(in)
+		data, err := os.ReadFile(in)
 		if err != nil {
 			return "", fmt.Errorf("failed to read temperature input: %s - %v", in, err)
 		}

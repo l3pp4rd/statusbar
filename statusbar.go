@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -24,7 +24,7 @@ type statusbar struct {
 
 func run(conf string) error {
 	var bar statusbar
-	file, err := ioutil.ReadFile(conf)
+	file, err := os.ReadFile(conf)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %s - %s", conf, err)
 	}

@@ -27,7 +27,6 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -497,35 +496,37 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"xbm/arr_down.xbm": xbmArr_downXbm,
-	"xbm/arr_up.xbm": xbmArr_upXbm,
-	"xbm/bat-full.xbm": xbmBatFullXbm,
-	"xbm/bat-low.xbm": xbmBatLowXbm,
-	"xbm/bat-mid.xbm": xbmBatMidXbm,
-	"xbm/clock.xpm": xbmClockXpm,
-	"xbm/clock2.xbm": xbmClock2Xbm,
+	"xbm/arr_down.xbm":     xbmArr_downXbm,
+	"xbm/arr_up.xbm":       xbmArr_upXbm,
+	"xbm/bat-full.xbm":     xbmBatFullXbm,
+	"xbm/bat-low.xbm":      xbmBatLowXbm,
+	"xbm/bat-mid.xbm":      xbmBatMidXbm,
+	"xbm/clock.xpm":        xbmClockXpm,
+	"xbm/clock2.xbm":       xbmClock2Xbm,
 	"xbm/disconnected.xbm": xbmDisconnectedXbm,
-	"xbm/load.xbm": xbmLoadXbm,
-	"xbm/mail.xbm": xbmMailXbm,
-	"xbm/mem.xbm": xbmMemXbm,
-	"xbm/net-wired.xbm": xbmNetWiredXbm,
-	"xbm/power-ac.xbm": xbmPowerAcXbm,
-	"xbm/vol-hi.xbm": xbmVolHiXbm,
-	"xbm/vol-mute.xbm": xbmVolMuteXbm,
-	"xbm/wifi-full.xbm": xbmWifiFullXbm,
-	"xbm/wifi-low.xbm": xbmWifiLowXbm,
-	"xbm/wifi-mid.xbm": xbmWifiMidXbm,
+	"xbm/load.xbm":         xbmLoadXbm,
+	"xbm/mail.xbm":         xbmMailXbm,
+	"xbm/mem.xbm":          xbmMemXbm,
+	"xbm/net-wired.xbm":    xbmNetWiredXbm,
+	"xbm/power-ac.xbm":     xbmPowerAcXbm,
+	"xbm/vol-hi.xbm":       xbmVolHiXbm,
+	"xbm/vol-mute.xbm":     xbmVolMuteXbm,
+	"xbm/wifi-full.xbm":    xbmWifiFullXbm,
+	"xbm/wifi-low.xbm":     xbmWifiLowXbm,
+	"xbm/wifi-mid.xbm":     xbmWifiMidXbm,
 }
 
 // AssetDir returns the file names below a certain
 // directory embedded in the file by go-bindata.
 // For example if you run go-bindata on data/... and data contains the
 // following hierarchy:
-//     data/
-//       foo.txt
-//       img/
-//         a.png
-//         b.png
+//
+//	data/
+//	  foo.txt
+//	  img/
+//	    a.png
+//	    b.png
+//
 // then AssetDir("data") would return []string{"foo.txt", "img"}
 // AssetDir("data/img") would return []string{"a.png", "b.png"}
 // AssetDir("foo.txt") and AssetDir("notexist") would return an error
@@ -556,26 +557,27 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"xbm": &bintree{nil, map[string]*bintree{
-		"arr_down.xbm": &bintree{xbmArr_downXbm, map[string]*bintree{}},
-		"arr_up.xbm": &bintree{xbmArr_upXbm, map[string]*bintree{}},
-		"bat-full.xbm": &bintree{xbmBatFullXbm, map[string]*bintree{}},
-		"bat-low.xbm": &bintree{xbmBatLowXbm, map[string]*bintree{}},
-		"bat-mid.xbm": &bintree{xbmBatMidXbm, map[string]*bintree{}},
-		"clock.xpm": &bintree{xbmClockXpm, map[string]*bintree{}},
-		"clock2.xbm": &bintree{xbmClock2Xbm, map[string]*bintree{}},
+		"arr_down.xbm":     &bintree{xbmArr_downXbm, map[string]*bintree{}},
+		"arr_up.xbm":       &bintree{xbmArr_upXbm, map[string]*bintree{}},
+		"bat-full.xbm":     &bintree{xbmBatFullXbm, map[string]*bintree{}},
+		"bat-low.xbm":      &bintree{xbmBatLowXbm, map[string]*bintree{}},
+		"bat-mid.xbm":      &bintree{xbmBatMidXbm, map[string]*bintree{}},
+		"clock.xpm":        &bintree{xbmClockXpm, map[string]*bintree{}},
+		"clock2.xbm":       &bintree{xbmClock2Xbm, map[string]*bintree{}},
 		"disconnected.xbm": &bintree{xbmDisconnectedXbm, map[string]*bintree{}},
-		"load.xbm": &bintree{xbmLoadXbm, map[string]*bintree{}},
-		"mail.xbm": &bintree{xbmMailXbm, map[string]*bintree{}},
-		"mem.xbm": &bintree{xbmMemXbm, map[string]*bintree{}},
-		"net-wired.xbm": &bintree{xbmNetWiredXbm, map[string]*bintree{}},
-		"power-ac.xbm": &bintree{xbmPowerAcXbm, map[string]*bintree{}},
-		"vol-hi.xbm": &bintree{xbmVolHiXbm, map[string]*bintree{}},
-		"vol-mute.xbm": &bintree{xbmVolMuteXbm, map[string]*bintree{}},
-		"wifi-full.xbm": &bintree{xbmWifiFullXbm, map[string]*bintree{}},
-		"wifi-low.xbm": &bintree{xbmWifiLowXbm, map[string]*bintree{}},
-		"wifi-mid.xbm": &bintree{xbmWifiMidXbm, map[string]*bintree{}},
+		"load.xbm":         &bintree{xbmLoadXbm, map[string]*bintree{}},
+		"mail.xbm":         &bintree{xbmMailXbm, map[string]*bintree{}},
+		"mem.xbm":          &bintree{xbmMemXbm, map[string]*bintree{}},
+		"net-wired.xbm":    &bintree{xbmNetWiredXbm, map[string]*bintree{}},
+		"power-ac.xbm":     &bintree{xbmPowerAcXbm, map[string]*bintree{}},
+		"vol-hi.xbm":       &bintree{xbmVolHiXbm, map[string]*bintree{}},
+		"vol-mute.xbm":     &bintree{xbmVolMuteXbm, map[string]*bintree{}},
+		"wifi-full.xbm":    &bintree{xbmWifiFullXbm, map[string]*bintree{}},
+		"wifi-low.xbm":     &bintree{xbmWifiLowXbm, map[string]*bintree{}},
+		"wifi-mid.xbm":     &bintree{xbmWifiMidXbm, map[string]*bintree{}},
 	}},
 }}
 
@@ -593,7 +595,7 @@ func RestoreAsset(dir, name string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(_filePath(dir, name), data, info.Mode())
+	err = os.WriteFile(_filePath(dir, name), data, info.Mode())
 	if err != nil {
 		return err
 	}
@@ -625,4 +627,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-
