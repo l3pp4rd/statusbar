@@ -14,6 +14,7 @@ import (
 const (
 	KB       = 1024
 	MB       = KB * KB
+	GB       = MB * KB
 	DOWNLOAD = "rx"
 	UPLOAD   = "tx"
 )
@@ -197,7 +198,7 @@ func network_device_bytes(dev, typ string) (int64, error) {
 }
 
 func network_traffic(prev, next int64, typ string) string {
-	nb := (next - prev) / KB / INTERVAL_SECS
+	nb := (next - prev) / INTERVAL_SECS
 	format := "%s ^i(" + xbm("arr_down") + ")^fg()"
 	if typ == UPLOAD {
 		format = "%s ^i(" + xbm("arr_up") + ")^fg()"
@@ -206,5 +207,13 @@ func network_traffic(prev, next int64, typ string) string {
 		format = "^fg(" + nw_colors[typ] + ")" + format
 	}
 
-	return fmt.Sprintf(format, fmt.Sprintf("%d KB", nb))
+	gbs := nb / GB
+	if gbs > 0 {
+		return fmt.Sprintf(format, fmt.Sprintf("%d GB", gbs))
+	}
+	mbs := nb / MB
+	if mbs > 0 {
+		return fmt.Sprintf(format, fmt.Sprintf("%d MB", mbs))
+	}
+	return fmt.Sprintf(format, fmt.Sprintf("%d KB", nb/KB))
 }
