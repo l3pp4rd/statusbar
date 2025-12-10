@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 const (
@@ -37,10 +36,15 @@ func main() {
 func init_assets() error {
 	_, err := exec.Command("mkdir", "-p", XBM_DIR).Output()
 	if err != nil {
+
 		return fmt.Errorf("could not create dir: %s - %s", XBM_DIR, err)
 	}
-	for p, f := range _bindata {
-		loc := XBM_DIR + strings.Replace(p, "xbm/", "/", 1)
+	files, err := iconFiles.ReadDir("xbm")
+	if err != nil {
+		return fmt.Errorf("could not read embedded icons: %s", err)
+	}
+	for _, f := range files {
+		loc := XBM_DIR + "/" + f.Name()
 		_, err := os.Stat(loc)
 		switch {
 		case err == nil:
@@ -49,9 +53,9 @@ func init_assets() error {
 			return fmt.Errorf("stat asset %s - %s", loc, err)
 		}
 
-		asset, err := f()
+		asset, err := iconFiles.ReadFile("xbm/" + f.Name())
 		if err != nil {
-			return fmt.Errorf("asset %s can't read: %s", p, err)
+			return fmt.Errorf("asset can't read: %s", err)
 		}
 
 		file, err := os.Create(loc)
@@ -59,11 +63,17 @@ func init_assets() error {
 			return fmt.Errorf("failed to open asset: %s file for writing: %s", loc, err)
 		}
 
-		if _, err = file.Write(asset.bytes); err != nil {
-			file.Close()
+		if _, err = file.Write(asset); err != nil {
+			errClose := file.Close()
+			if errClose != nil {
+				return errClose
+			}
 			return fmt.Errorf("failed to write asset to file: %s, because: %s", loc, err)
 		}
-		file.Close()
+		err = file.Close()
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

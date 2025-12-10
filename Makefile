@@ -1,13 +1,9 @@
 .PHONY: install deps
 
-install: deps assets.go
+install: deps
 	go build -o statusbar
 	sudo mv statusbar /usr/local/bin/statusbar
 	if [ -f statusbar.json ]; then sudo cp statusbar.json /usr/local/etc/statusbar.json; fi
-
-assets.go:
-	go get github.com/jteeuwen/go-bindata/...
-	go-bindata -nomemcopy -o assets.go xbm/
 
 deps:
 	@$(call installed,go)
