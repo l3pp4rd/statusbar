@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -22,7 +23,7 @@ type statusbar struct {
 	Gmail []gmailAccount
 }
 
-func run(conf string) error {
+func run(ctx context.Context, conf string) error {
 	var bar statusbar
 	file, err := os.ReadFile(conf)
 	if err != nil {
@@ -44,7 +45,7 @@ func run(conf string) error {
 	bar.elements = append(bar.elements, memory_usage())
 	bar.elements = append(bar.elements, date())
 
-	cmd := exec.Command("dzen2", bar.Dzen2...)
+	cmd := exec.CommandContext(ctx, "dzen2", bar.Dzen2...)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return fmt.Errorf("failed to create stdin pipe: %s", err)
@@ -56,6 +57,11 @@ func run(conf string) error {
 	// run the iteration loop
 	go func() {
 		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			if _, e := stdin.Write([]byte(strings.Join(bar.iterate(), " ") + "\n")); e != nil {
 				log.Printf("probably the pipe closed: %s", e)
 				break

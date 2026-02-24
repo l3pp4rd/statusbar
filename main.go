@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"time"
 )
 
 const (
@@ -28,8 +30,19 @@ func main() {
 		log.Fatalf("asset initialization failed: %s\n", err)
 	}
 
-	if err := run(os.Args[1]); err != nil {
-		log.Fatalf("statusbar failed: %s\n", err)
+	conf := os.Args[1]
+	for {
+		ctx, cancel := context.WithCancel(context.Background())
+
+		// watch for xrandr changes and cancel context when detected
+		go watchXrandr(ctx, cancel)
+
+		err := run(ctx, conf)
+		cancel()
+		if err != nil && ctx.Err() == nil {
+			log.Fatalf("statusbar failed: %s\n", err)
+		}
+		log.Println("screen configuration changed, restarting...")
 	}
 }
 
@@ -41,6 +54,7 @@ func init_assets() error {
 	}
 	files, err := iconFiles.ReadDir("xbm")
 	if err != nil {
+
 		return fmt.Errorf("could not read embedded icons: %s", err)
 	}
 	for _, f := range files {
@@ -76,6 +90,34 @@ func init_assets() error {
 		}
 	}
 	return nil
+}
+
+func xrandrOutput() string {
+	out, err := exec.Command("xrandr").Output()
+	if err != nil {
+		log.Printf("xrandr failed: %s", err)
+		return ""
+	}
+	return string(out)
+}
+
+func watchXrandr(ctx context.Context, cancel context.CancelFunc) {
+	prev := xrandrOutput()
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			cur := xrandrOutput()
+			if cur != "" && cur != prev {
+				log.Println("xrandr change detected")
+				cancel()
+				return
+			}
+		}
+	}
 }
 
 func file_exists(p string) bool {
