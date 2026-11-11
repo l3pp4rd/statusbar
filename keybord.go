@@ -9,12 +9,10 @@ import (
 	"time"
 )
 
-type Keyboard struct {
-	val string
-}
+var match_layout = regexp.MustCompile(`xkb_symbols[^"]+"([^"]+)`)
 
-func (k *Keyboard) value() string {
-	return k.val
+type Keyboard struct {
+	output
 }
 
 func keyboard() element {
@@ -22,7 +20,7 @@ func keyboard() element {
 	go func() {
 		for {
 			if val, err := e.layout(); err == nil {
-				e.val = val
+				e.set(val)
 			} else {
 				log.Printf("could not read keyboard layout: %v", err)
 			}
@@ -38,9 +36,7 @@ func (k *Keyboard) layout() (string, error) {
 		return "", fmt.Errorf("'setxkbmap -print' command: %s", err)
 	}
 
-	r := regexp.MustCompile(`xkb_symbols[^"]+"([^"]+)`)
-
-	m := r.FindStringSubmatch(string(data))
+	m := match_layout.FindStringSubmatch(string(data))
 	if len(m) != 2 {
 		return "", fmt.Errorf("could not extract keybord layout from %s", string(data))
 	}
@@ -50,5 +46,5 @@ func (k *Keyboard) layout() (string, error) {
 		return "", fmt.Errorf("expected at least two elements in keyboard details: %s", m[1])
 	}
 
-	return fmt.Sprintf("^fg(white) %s^fg()", parts[1]), nil
+	return "^fg(white) " + parts[1] + "^fg()", nil
 }

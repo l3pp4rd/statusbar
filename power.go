@@ -11,13 +11,9 @@ import (
 )
 
 type pw_sources struct {
+	output
 	AC        string
-	val       string
 	batteries []string
-}
-
-func (s *pw_sources) value() string {
-	return s.val
 }
 
 func power() element {
@@ -29,7 +25,7 @@ func power() element {
 
 	go func() {
 		for {
-			e.val = e.read()
+			e.set(e.read())
 			time.Sleep(time.Second * 3)
 		}
 	}()
@@ -51,7 +47,7 @@ func (s *pw_sources) prepare() error {
 		}
 
 		// maybe battery
-		if strings.Index(d, "BAT") != -1 {
+		if strings.Contains(d, "BAT") {
 			cap := filepath.Join(p, "capacity")
 			if !file_exists(cap) {
 				return fmt.Errorf("could not locate battery capacity stats at: %s", cap)

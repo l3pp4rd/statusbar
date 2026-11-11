@@ -3,7 +3,11 @@
 install: deps
 	go build -o statusbar
 	sudo mv statusbar /usr/local/bin/statusbar
-	if [ -f statusbar.json ]; then sudo cp statusbar.json /usr/local/etc/statusbar.json; fi
+	if [ -f statusbar.json ]; then \
+		sudo cp statusbar.json /usr/local/etc/statusbar.json; \
+	elif [ ! -f /usr/local/etc/statusbar.json ]; then \
+		sudo cp statusbar.dist.json /usr/local/etc/statusbar.json; \
+	fi
 
 deps:
 	@$(call installed,go)

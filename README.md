@@ -35,8 +35,10 @@ clone and edit. Create your statusbar configuration:
 on your needs.
 
 If you run `make` it will build and move binary to
-**/usr/local/bin/statusbar** and statusbar.json if available, to
-**/usr/local/etc/statusbar.json**.
+**/usr/local/bin/statusbar** and statusbar.json to
+**/usr/local/etc/statusbar.json**. If there is no statusbar.json, then
+statusbar.dist.json is installed instead, unless a configuration is
+already installed.
 
     make
 

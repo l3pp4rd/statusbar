@@ -8,11 +8,43 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
 type element interface {
 	value() string
+}
+
+// output holds the latest rendered value of an element,
+// it is written by the element poller and read by the statusbar loop
+type output struct {
+	p atomic.Pointer[string]
+}
+
+func (o *output) set(s string) {
+	o.p.Store(&s)
+}
+
+func (o *output) value() string {
+	if s := o.p.Load(); s != nil {
+		return *s
+	}
+	return ""
+}
+
+// elements start their pollers, which run for the lifetime
+// of the process, so it must be called only once
+func elements() []element {
+	return []element{
+		keyboard(),
+		network(),
+		cpu_temp(),
+		power(),
+		cpu_load(),
+		memory_usage(),
+		date(),
+	}
 }
 
 type statusbar struct {
@@ -22,8 +54,8 @@ type statusbar struct {
 	Dzen2 []string
 }
 
-func run(ctx context.Context, conf string) error {
-	var bar statusbar
+func run(ctx context.Context, conf string, els []element) error {
+	bar := statusbar{elements: els}
 	file, err := os.ReadFile(conf)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %s - %s", conf, err)
@@ -32,14 +64,6 @@ func run(ctx context.Context, conf string) error {
 	if err := json.Unmarshal(file, &bar); err != nil {
 		return fmt.Errorf("failed to unmarshal config file: %s - %s", conf, err)
 	}
-
-	bar.elements = append(bar.elements, keyboard())
-	bar.elements = append(bar.elements, network())
-	bar.elements = append(bar.elements, cpu_temp())
-	bar.elements = append(bar.elements, power())
-	bar.elements = append(bar.elements, cpu_load())
-	bar.elements = append(bar.elements, memory_usage())
-	bar.elements = append(bar.elements, date())
 
 	cmd := exec.CommandContext(ctx, "dzen2", bar.Dzen2...)
 	stdin, err := cmd.StdinPipe()
@@ -70,7 +94,7 @@ func run(ctx context.Context, conf string) error {
 }
 
 func (bar *statusbar) iterate() []string {
-	var res []string
+	res := make([]string, 0, len(bar.elements))
 	for _, el := range bar.elements {
 		res = append(res, el.value())
 	}

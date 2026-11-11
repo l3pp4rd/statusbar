@@ -29,13 +29,14 @@ func main() {
 	}
 
 	conf := os.Args[1]
+	els := elements()
 	for {
 		ctx, cancel := context.WithCancel(context.Background())
 
 		// watch for xrandr changes and cancel context when detected
 		go watchXrandr(ctx, cancel)
 
-		err := run(ctx, conf)
+		err := run(ctx, conf, els)
 		cancel()
 		if err != nil && ctx.Err() == nil {
 			log.Fatalf("statusbar failed: %s\n", err)
@@ -91,7 +92,8 @@ func init_assets() error {
 }
 
 func xrandrOutput() string {
-	out, err := exec.Command("xrandr").Output()
+	// --current reads the cached configuration instead of re-probing outputs
+	out, err := exec.Command("xrandr", "--current").Output()
 	if err != nil {
 		log.Printf("xrandr failed: %s", err)
 		return ""

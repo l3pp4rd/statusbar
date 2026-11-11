@@ -4,21 +4,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
-var match_temp = regexp.MustCompile(`Core\s+\d+:\s+\+([\d]+)`)
-
 type CpuTemp struct {
-	val    string
+	output
 	inputs []string
-}
-
-func (k *CpuTemp) value() string {
-	return k.val
 }
 
 func cpu_temp() element {
@@ -46,7 +39,7 @@ func cpu_temp() element {
 	go func() {
 		for {
 			if val, err := e.read(); err == nil {
-				e.val = val
+				e.set(val)
 			} else {
 				log.Printf("could not read cpu temp: %v", err)
 			}

@@ -1,46 +1,40 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"time"
 )
 
 type Date struct {
-	val string
-}
-
-func (k *Date) value() string {
-	return k.val
+	output
+	localTZ, extraTZ *time.Location
 }
 
 func date() element {
 	e := &Date{}
+	// time zones are loaded once, since every load reads and parses the zoneinfo file
+	var err error
+	if e.localTZ, err = time.LoadLocation("Europe/Vilnius"); err != nil {
+		log.Printf("could not load local time zone: %v", err)
+		return e
+	}
+	if e.extraTZ, err = time.LoadLocation("Europe/London"); err != nil {
+		log.Printf("could not load extra time zone: %v", err)
+		return e
+	}
 	go func() {
 		for {
-			if val, err := e.read(); err == nil {
-				e.val = val
-			} else {
-				log.Printf("could not read date: %v", err)
-			}
+			e.set(e.read())
 			time.Sleep(time.Second)
 		}
 	}()
 	return e
 }
 
-func (k *Date) read() (string, error) {
-	localTZ, err := time.LoadLocation("Europe/Vilnius")
-	if err != nil {
-		return "", err
-	}
-	extraTZ, err := time.LoadLocation("Europe/London")
-	if err != nil {
-		return "", err
-	}
+func (k *Date) read() string {
+	now := time.Now()
+	local := now.In(k.localTZ).Format("Mon _2 Jan 15:04")
+	extra := now.In(k.extraTZ).Format("15:04")
 
-	local := time.Now().In(localTZ).Format("Mon _2 Jan 15:04")
-	extra := "UK " + time.Now().In(extraTZ).Format("15:04")
-
-	return fmt.Sprintf("^fg(white)%s ^i(%s) ^fg()%s", local, xbm("clock2"), extra), nil
+	return "^fg(white)" + local + " ^i(" + xbm("clock2") + ") ^fg()UK " + extra
 }

@@ -10,11 +10,7 @@ import (
 )
 
 type CpuLoad struct {
-	val string
-}
-
-func (k *CpuLoad) value() string {
-	return k.val
+	output
 }
 
 func cpu_load() element {
@@ -22,7 +18,7 @@ func cpu_load() element {
 	go func() {
 		for {
 			if val, err := e.read(); err == nil {
-				e.val = val
+				e.set(val)
 			} else {
 				log.Printf("could not read cpu load: %v", err)
 			}
