@@ -20,7 +20,6 @@ type statusbar struct {
 
 	// configuration properties
 	Dzen2 []string
-	Gmail []gmailAccount
 }
 
 func run(ctx context.Context, conf string) error {
@@ -35,9 +34,6 @@ func run(ctx context.Context, conf string) error {
 	}
 
 	bar.elements = append(bar.elements, keyboard())
-	if len(bar.Gmail) > 0 {
-		bar.elements = append(bar.elements, emails(bar.Gmail))
-	}
 	bar.elements = append(bar.elements, network())
 	bar.elements = append(bar.elements, cpu_temp())
 	bar.elements = append(bar.elements, power())

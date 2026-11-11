@@ -12,8 +12,6 @@ import (
 const (
 	INTERVAL_SECS = 1
 
-	EMAIL_FEED = "https://mail.google.com/a/gmail.com/feed/atom"
-
 	XBM_DIR = "/tmp/statusbar_xbm"
 )
 
