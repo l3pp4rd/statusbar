@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -72,7 +73,7 @@ func (g *gmail) fetch(usr, psw string) (c int, err error) {
 
 	if res.StatusCode != 200 {
 		res.Body.Close()
-		return c, fmt.Errorf(res.Status)
+		return c, errors.New(res.Status)
 	}
 
 	data := struct {
